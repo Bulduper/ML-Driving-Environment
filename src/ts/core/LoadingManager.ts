@@ -1,9 +1,9 @@
+import Swal from 'sweetalert2';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { Scenario } from '../world/Scenario';
+import { World } from '../world/World';
 import { LoadingTrackerEntry } from './LoadingTrackerEntry';
 import { UIManager } from './UIManager';
-import { Scenario } from '../world/Scenario';
-import Swal from 'sweetalert2';
-import { World } from '../world/World';
 
 export class LoadingManager
 {

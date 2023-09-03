@@ -1,17 +1,16 @@
-import { Character } from '../characters/Character';
-import * as THREE from 'three';
 import * as CANNON from 'cannon';
-import { World } from '../world/World';
-import _ = require('lodash');
-import { KeyBinding } from '../core/KeyBinding';
-import { VehicleSeat } from './VehicleSeat';
-import { Wheel } from './Wheel';
-import { VehicleDoor } from './VehicleDoor';
-import * as Utils from '../core/FunctionLibrary';
-import { CollisionGroups } from '../enums/CollisionGroups';
+import * as THREE from 'three';
+import { Character } from '../characters/Character';
 import { SwitchingSeats } from '../characters/character_states/vehicles/SwitchingSeats';
+import * as Utils from '../core/FunctionLibrary';
+import { KeyBinding } from '../core/KeyBinding';
+import { CollisionGroups } from '../enums/CollisionGroups';
 import { EntityType } from '../enums/EntityType';
 import { IWorldEntity } from '../interfaces/IWorldEntity';
+import { World } from '../world/World';
+import { VehicleSeat } from './VehicleSeat';
+import { Wheel } from './Wheel';
+import _ = require('lodash');
 
 export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 {
@@ -189,6 +188,7 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 	public setFirstPersonView(value: boolean): void
 	{
 		this.firstPerson = value;
+		this.world.cameraOperator.stickMode = value;
 		if (this.controllingCharacter !== undefined) this.controllingCharacter.modelContainer.visible = !value;
 
 		if (value)
@@ -239,7 +239,7 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 
 	public handleMouseMove(event: MouseEvent, deltaX: number, deltaY: number): void
 	{
-		this.world.cameraOperator.move(deltaX, deltaY);
+		if(!this.firstPerson) this.world.cameraOperator.move(deltaX, deltaY);
 	}
 
 	public handleMouseWheel(event: WheelEvent, value: number): void
@@ -250,7 +250,7 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 	public inputReceiverInit(): void
 	{
 		this.collision.allowSleep = false;
-		this.setFirstPersonView(false);
+		this.setFirstPersonView(true);
 	}
 
 	public inputReceiverUpdate(timeStep: number): void
@@ -265,7 +265,13 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 
 			let temp = new THREE.Vector3().copy(this.camera.position);
 			temp.applyQuaternion(this.quaternion);
-			this.world.cameraOperator.target.copy(temp.add(this.position));
+			// this.world.cameraOperator.target.copy(temp.add(this.position));
+
+
+			// let temp = new THREE.Vector3(0,0.6,0.3);
+			// temp.applyQuaternion(this.quaternion);
+			let cameraStart = this.position.clone().add(temp);
+			this.world.cameraOperator.setCameraPositionAndDirection(cameraStart, new THREE.Vector3(0,0,1).applyQuaternion(this.quaternion));
 		}
 		else
 		{
@@ -277,7 +283,7 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 			);
 		}
 	}
-
+	
 	public setPosition(x: number, y: number, z: number): void
 	{
 		this.collision.position.x = x;

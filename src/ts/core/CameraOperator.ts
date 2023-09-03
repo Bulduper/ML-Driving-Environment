@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import * as Utils from './FunctionLibrary';
-import { World } from '../world/World';
-import { IInputReceiver } from '../interfaces/IInputReceiver';
-import { KeyBinding } from './KeyBinding';
 import { Character } from '../characters/Character';
-import _ = require('lodash');
+import { IInputReceiver } from '../interfaces/IInputReceiver';
 import { IUpdatable } from '../interfaces/IUpdatable';
+import { World } from '../world/World';
+import * as Utils from './FunctionLibrary';
+import { KeyBinding } from './KeyBinding';
+import _ = require('lodash');
 
 export class CameraOperator implements IInputReceiver, IUpdatable
 {
@@ -31,6 +31,7 @@ export class CameraOperator implements IInputReceiver, IUpdatable
 	public rightVelocity: number = 0;
 
 	public followMode: boolean = false;
+	public stickMode: boolean = false;
 
 	public characterCaller: Character;
 
@@ -96,6 +97,8 @@ export class CameraOperator implements IInputReceiver, IUpdatable
 			this.camera.position.y = newPos.y;
 			this.camera.position.z = newPos.z;
 		}
+		else if(this.stickMode){
+		}
 		else 
 		{
 			this.radius = THREE.MathUtils.lerp(this.radius, this.targetRadius, 0.1);
@@ -106,6 +109,11 @@ export class CameraOperator implements IInputReceiver, IUpdatable
 			this.camera.updateMatrix();
 			this.camera.lookAt(this.target);
 		}
+	}
+
+	public setCameraPositionAndDirection(position: THREE.Vector3, direction: THREE.Vector3):void{
+		this.camera.position.set(position.x,position.y, position.z);
+		this.camera.lookAt(position.clone().add(direction));
 	}
 
 	public handleKeyboardEvent(event: KeyboardEvent, code: string, pressed: boolean): void

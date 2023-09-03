@@ -1,16 +1,16 @@
-import * as THREE from 'three';
 import * as CANNON from 'cannon';
-import { CameraOperator } from '../core/CameraOperator';
-import { Stats } from '../../lib/utils/Stats';
+import * as THREE from 'three';
 import { CannonDebugRenderer } from '../../lib/cannon/CannonDebugRenderer';
+import { Stats } from '../../lib/utils/Stats';
+import { Character } from '../characters/Character';
+import { CameraOperator } from '../core/CameraOperator';
+import { InfoStack } from '../core/InfoStack';
 import { InputManager } from '../core/InputManager';
 import { LoadingManager } from '../core/LoadingManager';
-import { InfoStack } from '../core/InfoStack';
-import { IWorldEntity } from '../interfaces/IWorldEntity';
 import { IUpdatable } from '../interfaces/IUpdatable';
-import { Character } from '../characters/Character';
-import { Path } from './Path';
+import { IWorldEntity } from '../interfaces/IWorldEntity';
 import { Vehicle } from '../vehicles/Vehicle';
+import { Path } from './Path';
 import { Scenario } from './Scenario';
 import { Sky } from './Sky';
 export declare class World {

@@ -1,36 +1,37 @@
-import * as THREE from 'three';
 import * as CANNON from 'cannon';
-import Swal from 'sweetalert2';
 import * as $ from 'jquery';
+import Swal from 'sweetalert2';
+import * as THREE from 'three';
 
-import { CameraOperator } from '../core/CameraOperator';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-import { FXAAShader  } from 'three/examples/jsm/shaders/FXAAShader';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
+import { CameraOperator } from '../core/CameraOperator';
 
+import * as _ from 'lodash';
+import { CannonDebugRenderer } from '../../lib/cannon/CannonDebugRenderer';
 import { Detector } from '../../lib/utils/Detector';
 import { Stats } from '../../lib/utils/Stats';
 import * as GUI from '../../lib/utils/dat.gui';
-import { CannonDebugRenderer } from '../../lib/cannon/CannonDebugRenderer';
-import * as _ from 'lodash';
 
-import { InputManager } from '../core/InputManager';
-import * as Utils from '../core/FunctionLibrary';
-import { LoadingManager } from '../core/LoadingManager';
-import { InfoStack } from '../core/InfoStack';
-import { UIManager } from '../core/UIManager';
-import { IWorldEntity } from '../interfaces/IWorldEntity';
-import { IUpdatable } from '../interfaces/IUpdatable';
 import { Character } from '../characters/Character';
-import { Path } from './Path';
+import * as Utils from '../core/FunctionLibrary';
+import { InfoStack } from '../core/InfoStack';
+import { InputManager } from '../core/InputManager';
+import { LoadingManager } from '../core/LoadingManager';
+import { UIManager } from '../core/UIManager';
 import { CollisionGroups } from '../enums/CollisionGroups';
+import { Helpers } from '../helpers/Helpers';
+import { IUpdatable } from '../interfaces/IUpdatable';
+import { IWorldEntity } from '../interfaces/IWorldEntity';
 import { BoxCollider } from '../physics/colliders/BoxCollider';
 import { TrimeshCollider } from '../physics/colliders/TrimeshCollider';
 import { Vehicle } from '../vehicles/Vehicle';
+import { Ocean } from './Ocean';
+import { Path } from './Path';
 import { Scenario } from './Scenario';
 import { Sky } from './Sky';
-import { Ocean } from './Ocean';
 
 export class World
 {
@@ -63,6 +64,7 @@ export class World
 	public paths: Path[] = [];
 	public scenarioGUIFolder: any;
 	public updatables: IUpdatable[] = [];
+	public helpers: Helpers;
 
 	private lastScenarioID: string;
 
@@ -151,6 +153,8 @@ export class World
 		this.inputManager = new InputManager(this, this.renderer.domElement);
 		this.cameraOperator = new CameraOperator(this, this.camera, this.params.Mouse_Sensitivity);
 		this.sky = new Sky(this);
+
+		this.helpers = new Helpers(this);
 		
 		// Load scene if path is supplied
 		if (worldScenePath !== undefined)
@@ -528,11 +532,11 @@ export class World
 	private createParamsGUI(scope: World): void
 	{
 		this.params = {
-			Pointer_Lock: true,
+			Pointer_Lock: false,
 			Mouse_Sensitivity: 0.3,
 			Time_Scale: 1,
 			Shadows: true,
-			FXAA: true,
+			FXAA: false,
 			Debug_Physics: false,
 			Debug_FPS: false,
 			Sun_Elevation: 50,
@@ -617,5 +621,20 @@ export class World
 			});
 
 		gui.open();
+	}
+
+	public addDebugArrow(origin: THREE.Vector3, direction: THREE.Vector3, colorHex = 0xffff00 ):void {
+		// const dir = new THREE.Vector3( 1, 2, 0 );
+
+		//normalize the direction vector (convert to vector of length 1)
+		direction.normalize();
+
+		// const origin = new THREE.Vector3( 0, 0, 0 );
+		const length = 1;
+		// const hex = 0xffff00;
+
+		const arrowHelper = new THREE.ArrowHelper( direction, origin, length, colorHex );
+		this.graphicsWorld.add( arrowHelper );
+		// this.graphicsWorld.add();
 	}
 }
