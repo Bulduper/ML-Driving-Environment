@@ -1,13 +1,12 @@
 import * as CANNON from 'cannon';
 
-import { Vehicle } from './Vehicle';
-import { IControllable } from '../interfaces/IControllable';
-import { KeyBinding } from '../core/KeyBinding';
 import * as THREE from 'three';
 import * as Utils from '../core/FunctionLibrary';
-import { SpringSimulator } from '../physics/spring_simulation/SpringSimulator';
-import { World } from '../world/World';
+import { KeyBinding } from '../core/KeyBinding';
 import { EntityType } from '../enums/EntityType';
+import { IControllable } from '../interfaces/IControllable';
+import { SpringSimulator } from '../physics/spring_simulation/SpringSimulator';
+import { Vehicle } from './Vehicle';
 
 export class Car extends Vehicle implements IControllable
 {
@@ -23,7 +22,10 @@ export class Car extends Vehicle implements IControllable
 	private airSpinTimer: number = 0;
 
 	private steeringSimulator: SpringSimulator;
-	private gear: number = 1;
+	private _gear: number = 1;
+	get gear(): number {
+		return this._gear;
+	}
 
 	// Transmission
 	private shiftTimer: number;
@@ -117,19 +119,19 @@ export class Car extends Vehicle implements IControllable
 			if (this.actions.reverse.isPressed)
 			{
 				const powerFactor = (gearsMaxSpeeds['R'] - this.speed) / Math.abs(gearsMaxSpeeds['R']);
-				const force = (engineForce / this.gear) * (Math.abs(powerFactor) ** 1);
+				const force = (engineForce / this._gear) * (Math.abs(powerFactor) ** 1);
 
 				this.applyEngineForce(force);
 			}
 			else
 			{
-				const powerFactor = (gearsMaxSpeeds[this.gear] - this.speed) / (gearsMaxSpeeds[this.gear] - gearsMaxSpeeds[this.gear - 1]);
+				const powerFactor = (gearsMaxSpeeds[this._gear] - this.speed) / (gearsMaxSpeeds[this._gear] - gearsMaxSpeeds[this._gear - 1]);
 
-				if (powerFactor < 0.1 && this.gear < maxGears) this.shiftUp();
-				else if (this.gear > 1 && powerFactor > 1.2) this.shiftDown();
+				if (powerFactor < 0.1 && this._gear < maxGears) this.shiftUp();
+				else if (this._gear > 1 && powerFactor > 1.2) this.shiftDown();
 				else if (this.actions.throttle.isPressed)
 				{
-					const force = (engineForce / this.gear) * (powerFactor ** 1);
+					const force = (engineForce / this._gear) * (powerFactor ** 1);
 					this.applyEngineForce(-force);
 				}
 			}
@@ -137,6 +139,7 @@ export class Car extends Vehicle implements IControllable
 
 		// Steering
 		this.steeringSimulator.simulate(timeStep);
+		// console.log('this.steeringSimulator.position',this.steeringSimulator.position); -0.8 - + 0.8
 		this.setSteeringValue(this.steeringSimulator.position);
 		if (this.steeringWheel !== undefined) this.steeringWheel.rotation.z = -this.steeringSimulator.position * 2;
 
@@ -163,7 +166,7 @@ export class Car extends Vehicle implements IControllable
 
 	public shiftUp(): void
 	{
-		this.gear++;
+		this._gear++;
 		this.shiftTimer = this.timeToShift;
 
 		this.applyEngineForce(0);
@@ -171,7 +174,7 @@ export class Car extends Vehicle implements IControllable
 
 	public shiftDown(): void
 	{
-		this.gear--;
+		this._gear--;
 		this.shiftTimer = this.timeToShift;
 
 		this.applyEngineForce(0);

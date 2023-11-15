@@ -1,5 +1,7 @@
 import Swal from 'sweetalert2';
+// import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader';
 import { Scenario } from '../world/Scenario';
 import { World } from '../world/World';
 import { LoadingTrackerEntry } from './LoadingTrackerEntry';
@@ -12,12 +14,14 @@ export class LoadingManager
 	
 	private world: World;
 	private gltfLoader: GLTFLoader;
+	private svgLoader: SVGLoader;
 	private loadingTracker: LoadingTrackerEntry[] = [];
 
 	constructor(world: World)
 	{
 		this.world = world;
 		this.gltfLoader = new GLTFLoader();
+		this.svgLoader = new SVGLoader();
 
 		this.world.setTimeScale(0);
 		UIManager.setUserInterfaceVisible(false);
@@ -32,6 +36,28 @@ export class LoadingManager
 		(gltf)  =>
 		{
 			onLoadingFinished(gltf);
+			this.doneLoading(trackerEntry);
+		},
+		(xhr) =>
+		{
+			if ( xhr.lengthComputable )
+			{
+				trackerEntry.progress = xhr.loaded / xhr.total;
+			}
+		},
+		(error)  =>
+		{
+			console.error(error);
+		});
+	}
+
+	public loadSVG(path: string, onLoadingFinished: (data: any) => void): void {
+		let trackerEntry = this.addLoadingEntry(path);
+
+		this.svgLoader.load(path,
+		(data)  =>
+		{
+			onLoadingFinished(data);
 			this.doneLoading(trackerEntry);
 		},
 		(xhr) =>
@@ -90,7 +116,7 @@ export class LoadingManager
 					buttonsStyling: false,
 					onClose: () => {
 						this.world.setTimeScale(1);
-						UIManager.setUserInterfaceVisible(true);
+						UIManager.setUserInterfaceVisible(false);
 					}
 				});
 			};

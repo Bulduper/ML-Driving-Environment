@@ -1,4 +1,3 @@
-import { WheelInfo } from 'cannon';
 
 export class Wheel
 {

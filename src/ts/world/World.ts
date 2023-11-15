@@ -25,6 +25,7 @@ import { CollisionGroups } from '../enums/CollisionGroups';
 import { Helpers } from '../helpers/Helpers';
 import { IUpdatable } from '../interfaces/IUpdatable';
 import { IWorldEntity } from '../interfaces/IWorldEntity';
+import { SocketIOClient } from '../networking/SocketIOClient';
 import { BoxCollider } from '../physics/colliders/BoxCollider';
 import { TrimeshCollider } from '../physics/colliders/TrimeshCollider';
 import { Vehicle } from '../vehicles/Vehicle';
@@ -86,7 +87,7 @@ export class World
 		}
 
 		// Renderer
-		this.renderer = new THREE.WebGLRenderer();
+		this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});
 		this.renderer.setPixelRatio(window.devicePixelRatio);
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -181,6 +182,8 @@ export class World
 					this.loadScene(loadingManager, gltf);
 				}
 			);
+			// const track = new Track(this);
+			// track.addSvgTrack(loadingManager);
 		}
 		else
 		{
@@ -193,6 +196,10 @@ export class World
 				buttonsStyling: false
 			});
 		}
+
+		// const ws = new WebSocketClient(this);
+		const sio = new SocketIOClient(this);
+		sio.connectToServer('localhost', 8888)
 
 		this.render(this);
 	}
@@ -336,6 +343,7 @@ export class World
 	public loadScene(loadingManager: LoadingManager, gltf: any): void
 	{
 		gltf.scene.traverse((child) => {
+			console.log(child);
 			if (child.hasOwnProperty('userData'))
 			{
 				if (child.type === 'Mesh')
@@ -347,6 +355,13 @@ export class World
 					{
 						this.registerUpdatable(new Ocean(child, this));
 					}
+				}
+
+				if(child.name.startsWith("Cube")){
+					child.visible = false;
+					let phys = new TrimeshCollider(child, {});
+					this.physicsWorld.addBody(phys.body);
+
 				}
 
 				if (child.userData.hasOwnProperty('data'))
